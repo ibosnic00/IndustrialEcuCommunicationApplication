@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Authors>Ivan Bosnic</Authors>
+    <Company>ivan.bosnic.st@gmail.com</Company>
+    <nullable>enable</nullable>
+    <Description>Industrial Ecu Communication Application</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="J1939\Messages\Commands\" />
+    <Folder Include="J1939\Messages\BroadcastsOrResponses\" />
+    <Folder Include="J1939\Messages\Acknowledgment\" />
+    <Folder Include="J1939\Messages\ConnectionManagement\" />
+    <Folder Include="J1939\Messages\GroupFunctions\" />
+    <Folder Include="J1939\Messages\Requests\" />
+  </ItemGroup>
+
+</Project>
