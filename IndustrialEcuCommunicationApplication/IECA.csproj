@@ -18,4 +18,8 @@
     <Folder Include="J1939\Messages\Requests\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
 </Project>

@@ -4,6 +4,7 @@ using System.Text;
 
 namespace IECA.J1939
 {
+
     public class ProtocolDataUnit
     {
         public ProtocolDataUnit(byte priority, byte dataPage, byte format,

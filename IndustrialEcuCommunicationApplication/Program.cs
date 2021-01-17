@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace IECA
     {
         #region Constants
 
+        private const string CONFIGURATION_PATH = @"/home/pi/Desktop/ieca_configuration.json";
         private const uint REQUEST_PGN = 59904;
         private const byte GLOBAL_DESTINATION_ADDRESS = 255;
 
@@ -21,6 +23,7 @@ namespace IECA
         #region Fields
 
         Queue<KeyValuePair<uint, List<byte>>> requestQue = new Queue<KeyValuePair<uint, List<byte>>>();
+        J1939ToJsonConverter? J1939ToJsonConverter;
 
         #endregion Fields
 
@@ -36,6 +39,11 @@ namespace IECA
             canInterface.StartReceiverThread();
             canInterface.DataFrameReceived += program.OnMessageReceivedLoggerOnly;
 
+            var configuration = ConfigurationDeserializer.GetConfigurationFromFile(CONFIGURATION_PATH);
+            program.J1939ToJsonConverter = new J1939ToJsonConverter(configuration);
+
+            Console.WriteLine($"Configuration file has {configuration.Count} defined PGN's");
+
             while (true)
             {
                 // main program loop
@@ -44,7 +52,7 @@ namespace IECA
 
         #endregion Application Logic
 
-        
+
         #region Event Handlers
 
         private void OnMessageReceivedLoggerOnly(object? sender, CanMessage msg)
@@ -52,11 +60,13 @@ namespace IECA
             if (!msg.IsExtendedId)
                 return;
 
+            if (msg.Data == null)
+                return;
+
             var receivedPdu = ProtocolDataUnit.FromCanExtIdentifierFormat(msg.ID);
 
-            if (msg.Data != null)
-                foreach (var dataByte in msg.Data)
-                    receivedPdu.DataField.Add(dataByte);
+            foreach (var dataByte in msg.Data)
+                receivedPdu.DataField.Add(dataByte);
 
             Console.WriteLine("Received J1939 message with:");
             Console.WriteLine("Priority : " + receivedPdu.Priority);
@@ -66,6 +76,10 @@ namespace IECA
             Console.WriteLine("PDU Specific : " + receivedPdu.Specific.Value);
             Console.WriteLine("SourceAddress : " + receivedPdu.SourceAddress);
             Console.WriteLine("PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
+
+            var receivedMessage = new J1939Message(receivedPdu, msg.Data.ToList());
+            if (J1939ToJsonConverter != null)
+                Console.WriteLine(J1939ToJsonConverter.ConvertJ1939MessageToHumanReadableFormat(receivedMessage));
         }
 
 
