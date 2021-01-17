@@ -25,18 +25,19 @@ namespace IECA
                 return $"Undefined PGN {j1939Message.PDU.ParameterGroupNumber}. Check Your configuration.";
             try
             {
-                result += pgnFromConfig.FullName + " ";
+                result += pgnFromConfig.FullName;
+                var dataConvertedToBits = ConvertByteListToStringOfBits(j1939Message.Data);
                 foreach (var spnFromConfig in pgnFromConfig.Spns)
                 {
-                    result += spnFromConfig.FullName + " ";
+                    result += "\n" + spnFromConfig.FullName + ": ";
 
                     if (spnFromConfig.Multiplier == null && spnFromConfig.Offset == null)
-                        result += GetStringValueFromByteList(j1939Message.Data, spnFromConfig.DataStartIndex);
+                        result += GetNumberValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
                     else
                     {
                         var multiplier = spnFromConfig.Multiplier;
                         var offset = spnFromConfig.Offset;
-                        var wantedValue = GetNumberValueFromBitArray(new BitArray(j1939Message.Data.ToArray()), spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
+                        var wantedValue = GetNumberValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
                         result += (wantedValue * multiplier + offset);
                     }
 
@@ -52,29 +53,20 @@ namespace IECA
 
         #region Helper Methods
 
-        uint GetNumberValueFromBitArray(BitArray bitArray, uint startIndex, uint len)
+        string ConvertByteListToStringOfBits(List<byte> byteList)
         {
-            // TODO: check bitArray.len >= (start + len)
             string result = string.Empty;
-            for (int i = 0; i < len; i++)
+            foreach (var singleByte in byteList)
             {
-                result += Convert.ToString(bitArray[(int)(startIndex + i)]); // +len-i in case of endian changes
+                result += Convert.ToString(singleByte, 2).PadLeft(8, '0');
             }
-            return Convert.ToUInt32(result, 2);
+            return result;
         }
 
-        string GetStringValueFromByteList(List<byte> byteList, uint startIndex)
+        uint GetNumberValueFromBitArray(string stringBitArray, uint startIndex, uint len)
         {
-            byte currentChar = 0;
-            var stringInAscii = new List<byte>();
-            byte count = 0;
-            while ((currentChar = byteList[(int)startIndex / 8]) != 42 && count < 200)
-            {
-                count++;
-                stringInAscii.Add(currentChar);
-            }
-
-            return System.Text.Encoding.ASCII.GetString(stringInAscii.ToArray());
+            // TODO: check bitArray.len >= (start + len)
+            return Convert.ToUInt32(stringBitArray.Substring((int)startIndex,(int)len), 2);
         }
 
         #endregion

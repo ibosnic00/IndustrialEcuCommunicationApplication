@@ -8,14 +8,13 @@ namespace IECA.J1939
     public class ProtocolDataUnit
     {
         public ProtocolDataUnit(byte priority, byte dataPage, byte format,
-            byte specific, byte sourceAddress, List<byte>? dataField, bool reserved = false)
+            byte specific, byte sourceAddress, bool reserved = false)
         {
             Priority = priority;
             DataPage = dataPage;
             Format = format;
             Specific = SolvePDUSpecific(specific);
             SourceAddress = sourceAddress;
-            DataField = dataField ?? new List<byte>();
             ParameterGroupNumber = CalculatePgn();
             Reserved = reserved;
         }
@@ -28,7 +27,6 @@ namespace IECA.J1939
         public byte Format { get; }
         public IPDUSpecific Specific { get; }
         public byte SourceAddress { get; }
-        public List<byte> DataField { get; set; }
         public uint ParameterGroupNumber { get; }
         public bool Reserved { get; } // Extended data page. J1939 devices must set to 0.
 
@@ -57,7 +55,7 @@ namespace IECA.J1939
             byte specific = Convert.ToByte(canExtId >> 8 & 0b1111_1111);
             byte sourceAddress = Convert.ToByte(canExtId & 0b1111_1111);
 
-            return new ProtocolDataUnit(priority, dataPage, format, specific, sourceAddress, dataField: null);
+            return new ProtocolDataUnit(priority, dataPage, format, specific, sourceAddress);
         }
 
         #endregion

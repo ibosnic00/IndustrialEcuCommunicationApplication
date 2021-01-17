@@ -65,17 +65,7 @@ namespace IECA
 
             var receivedPdu = ProtocolDataUnit.FromCanExtIdentifierFormat(msg.ID);
 
-            foreach (var dataByte in msg.Data)
-                receivedPdu.DataField.Add(dataByte);
-
-            Console.WriteLine("Received J1939 message with:");
-            Console.WriteLine("Priority : " + receivedPdu.Priority);
-            Console.WriteLine("Reserved : " + receivedPdu.Reserved);
-            Console.WriteLine("DataPage : " + receivedPdu.DataPage);
-            Console.WriteLine("PDU Format : " + receivedPdu.Format);
-            Console.WriteLine("PDU Specific : " + receivedPdu.Specific.Value);
-            Console.WriteLine("SourceAddress : " + receivedPdu.SourceAddress);
-            Console.WriteLine("PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
+            Console.WriteLine("Received J1939 message with PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
 
             var receivedMessage = new J1939Message(receivedPdu, msg.Data.ToList());
             if (J1939ToJsonConverter != null)
@@ -90,23 +80,22 @@ namespace IECA
 
             var receivedPdu = ProtocolDataUnit.FromCanExtIdentifierFormat(msg.ID);
 
-            if (msg.Data != null)
-                foreach (var dataByte in msg.Data)
-                    receivedPdu.DataField.Add(dataByte);
-
+            var receivedMessage = new J1939Message(receivedPdu, msg.Data.ToList());
+            if (J1939ToJsonConverter != null)
+                Console.WriteLine(J1939ToJsonConverter.ConvertJ1939MessageToHumanReadableFormat(receivedMessage));
 
             // specific request
             if (receivedPdu.ParameterGroupNumber == REQUEST_PGN && receivedPdu.Specific.Value != GLOBAL_DESTINATION_ADDRESS)
             {
                 //TODO: key should be 4 byte ID - specific request
-                requestQue.Enqueue(new KeyValuePair<uint, List<byte>>(receivedPdu.SourceAddress, receivedPdu.DataField));
+                requestQue.Enqueue(new KeyValuePair<uint, List<byte>>(receivedPdu.SourceAddress, receivedMessage.Data));
             }
 
             // global request
             if (receivedPdu.ParameterGroupNumber == REQUEST_PGN && receivedPdu.Specific.Value == GLOBAL_DESTINATION_ADDRESS)
             {
                 //TODO: key should be 4 byte ID - global request
-                requestQue.Enqueue(new KeyValuePair<uint, List<byte>>(receivedPdu.SourceAddress, receivedPdu.DataField));
+                requestQue.Enqueue(new KeyValuePair<uint, List<byte>>(receivedPdu.SourceAddress, receivedMessage.Data));
             }
 
             // PDU1 Format

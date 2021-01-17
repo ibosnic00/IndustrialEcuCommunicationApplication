@@ -6,6 +6,18 @@ namespace j1939.Test.Unit
     public class HelpersTests
     {
         [Test]
+        public void CandumpStringToCanMessage_ExtId_SuccessfullParsing()
+        {
+            string candumpString = "can0  0000CF00   [8]  01 55 02 88 12 AA 0A EE";
+            var expectedData = new byte[] { 0x01, 0x55, 0x02, 0x88, 0x12, 0xAA, 0x0A, 0xEE };
+            var result = Helpers.CandumpStringToCanMessage(candumpString);
+
+            Assert.AreEqual(0xCF00, result.ID);
+            Assert.AreEqual(8, result.DLC);
+            Assert.AreEqual(result.Data, expectedData);
+        }
+
+        [Test]
         public void CandumpStringToCanMessage_DataLen8_SuccessfullParsing()
         {
             string candumpString = "can1  7DF   [8]  02 01 0C 00 00 00 00 00";
@@ -65,7 +77,7 @@ namespace j1939.Test.Unit
         [Test]
         public void CanMessageToCandumpString_ValidMessage_SuccessfullConversion()
         {
-            var messageToSend = new CanMessage(id: 0x7EC, dlc: 5, data: new byte[] { 0xFF, 0x3, 0xAB, 0x7, 0xA }, CanMessageType.Data);
+            var messageToSend = new CanMessage(id: 0x7EC, idLen: 3, dlc: 5, data: new byte[] { 0xFF, 0x3, 0xAB, 0x7, 0xA }, CanMessageType.Data);
             var expected = "7EC#FF03AB070A";
             var result = Helpers.CanMessageToCandumpString(messageToSend);
 

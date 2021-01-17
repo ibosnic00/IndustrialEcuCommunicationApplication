@@ -6,12 +6,12 @@ namespace IECA
 {
     public readonly struct CanMessage : IEquatable<CanMessage>
     {
-        public const uint MAX_11_BIT_CAN_ID = 0x7FF;
+        public const uint MAX_11_BIT_CAN_ID_LEN = 3;
         public const uint MAX_29_BIT_CAN_ID = 0x1fffffff;
 
         public const uint MAX_CAN_MESSAGE_SIZE = 8u;
 
-        public CanMessage(uint id, byte dlc, byte[]? data, CanMessageType messageType)
+        public CanMessage(uint id, uint idLen, byte dlc, byte[]? data, CanMessageType messageType)
         {
             if (dlc > MAX_CAN_MESSAGE_SIZE)
                 throw new ArgumentOutOfRangeException(nameof(dlc));
@@ -22,6 +22,7 @@ namespace IECA
             DLC = dlc;
             Data = data;
             MessageType = messageType;
+            IsExtendedId = idLen > MAX_11_BIT_CAN_ID_LEN;
         }
 
         public uint ID { get; }
@@ -32,7 +33,7 @@ namespace IECA
 
         public CanMessageType MessageType { get; }
 
-        public bool IsExtendedId => ID > MAX_11_BIT_CAN_ID;
+        public bool IsExtendedId { get; }
 
         #region IEquatable implementation
 

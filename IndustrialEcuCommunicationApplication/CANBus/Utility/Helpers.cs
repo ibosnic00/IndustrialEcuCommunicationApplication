@@ -16,10 +16,14 @@ namespace IECA
             {
                 var groupsFoundInLine = matchInLine.Groups;
                 var parsedId = groupsFoundInLine["id"].Value;
+                Console.WriteLine(parsedId);
                 var parsedLen = groupsFoundInLine["len"].Value;
+                Console.WriteLine(parsedLen);
                 var parsedData = groupsFoundInLine["data"].Value;
+                Console.WriteLine(parsedData);
 
                 return new CanMessage(Convert.ToUInt32(parsedId, 16),
+                    (uint)parsedId.Length,
                     Convert.ToByte(parsedLen, 16),
                     GetDataBytesFromStringValue(parsedData, Convert.ToByte(parsedLen, 16)),
                     CanMessageType.Data);
