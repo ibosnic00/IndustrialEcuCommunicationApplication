@@ -32,13 +32,16 @@ namespace IECA
                     result += "\n" + spnFromConfig.FullName + ": ";
 
                     if (spnFromConfig.Multiplier == null && spnFromConfig.Offset == null)
-                        result += GetNumberValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
+                        result += GetRawValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
                     else
                     {
                         var multiplier = spnFromConfig.Multiplier;
                         var offset = spnFromConfig.Offset;
                         var wantedValue = GetNumberValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
-                        result += (wantedValue * multiplier + offset);
+                        if (wantedValue == null)
+                            result = "Inv.cfg";
+                        else
+                            result += (wantedValue * multiplier + offset);
                     }
 
                 }
@@ -53,7 +56,7 @@ namespace IECA
 
         #region Helper Methods
 
-        string ConvertByteListToStringOfBits(List<byte> byteList)
+        static string ConvertByteListToStringOfBits(List<byte> byteList)
         {
             string result = string.Empty;
             foreach (var singleByte in byteList)
@@ -63,10 +66,33 @@ namespace IECA
             return result;
         }
 
-        uint GetNumberValueFromBitArray(string stringBitArray, uint startIndex, uint len)
+        static uint? GetNumberValueFromBitArray(string stringBitArray, uint startIndex, uint len)
         {
-            // TODO: check bitArray.len >= (start + len)
-            return Convert.ToUInt32(stringBitArray.Substring((int)startIndex,(int)len), 2);
+            if (stringBitArray.Length < startIndex + len)
+                return null;
+            if (len > 8)
+            {
+                var reversedEndianStringitArray = string.Empty;
+                uint numberOfBytes = len / 8;
+                uint leftover = len % 8;
+
+                if (leftover != 0)
+                    reversedEndianStringitArray = stringBitArray.Substring((int)(startIndex + numberOfBytes * 8), (int)leftover);
+                for (int i = 1; i <= numberOfBytes; i++)
+                    reversedEndianStringitArray += stringBitArray.Substring((int)(startIndex + len - i * 8 + leftover), (int)8);
+
+                return Convert.ToUInt32(reversedEndianStringitArray.Substring((int)startIndex, (int)len), 2); ;
+            }
+            else
+                return Convert.ToUInt32(stringBitArray.Substring((int)startIndex, (int)len), 2);
+        }
+
+        static string GetRawValueFromBitArray(string stringBitArray, uint startIndex, uint len)
+        {
+            if (stringBitArray.Length < startIndex + len)
+                return "Inv.cfg";
+
+            return stringBitArray.Substring((int)startIndex, (int)len);
         }
 
         #endregion
