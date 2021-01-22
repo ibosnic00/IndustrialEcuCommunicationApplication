@@ -1,6 +1,7 @@
 ![](https://github.com/ibosnic00/IndustrialEcuCommunicationApplication/blob/main/IndustrialEcuCommunicationApplication/Resources/IECA.png?raw=true)
 
 # Industrial Ecu Communication Application
+![Workflow](https://github.com/ibosnic00/IndustrialEcuCommunicationApplication/workflows/.NET%20Unit%20Tests/badge.svg)
 
 *This is .NET CLI application which is based on can-utils's ```can-dump``` and ```can-send```.* 
 
