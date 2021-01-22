@@ -1,18 +1,33 @@
 ﻿using NUnit.Framework;
 using IECA;
 using IECA.J1939;
+using System.IO;
+using System.Reflection;
+using System.Linq;
 
 namespace j1939.Test.Unit
 {
     public class J1939ToJsonConverterTest
     {
         J1939ToJsonConverter? J1939ToJsonConverter;
-        private readonly string CONFIGURATION_PATH = @"C:\Users\ivan.bosnic\source\repos\IndustrialEcuCommunicationApplication\IndustrialEcuCommunicationApplication\Resources\ieca_configuration.json";
+
+        public static DirectoryInfo TryGetSolutionDirectoryInfo(string currentPath = null)
+        {
+            var directory = new DirectoryInfo(
+                currentPath ?? Directory.GetCurrentDirectory());
+            while (directory != null && !directory.GetFiles("*.sln").Any())
+            {
+                directory = directory.Parent;
+            }
+            return directory;
+        }
 
         [SetUp]
         public void Setup()
         {
-            var configuration = ConfigurationDeserializer.GetConfigurationFromFile(CONFIGURATION_PATH);
+            var slnPath = TryGetSolutionDirectoryInfo();
+            var configurationPath = Path.Combine(slnPath.FullName, "IndustrialEcuCommunicationApplication", "Resources", "ieca_configuration.json");
+            var configuration = ConfigurationDeserializer.GetConfigurationFromFile(configurationPath);            
             J1939ToJsonConverter = new J1939ToJsonConverter(configuration);
         }
 
