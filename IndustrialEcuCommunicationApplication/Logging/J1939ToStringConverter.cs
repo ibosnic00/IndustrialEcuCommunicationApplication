@@ -7,9 +7,9 @@ using System.Text;
 
 namespace IECA
 {
-    public class J1939ToJsonConverter
+    public class J1939ToStringConverter
     {
-        public J1939ToJsonConverter(List<ConfigurationPgn> configuration)
+        public J1939ToStringConverter(List<ConfigurationPgn> configuration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }

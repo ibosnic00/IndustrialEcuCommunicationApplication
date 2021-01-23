@@ -23,7 +23,7 @@ namespace IECA
         #region Fields
 
         Queue<KeyValuePair<uint, List<byte>>> requestQue = new Queue<KeyValuePair<uint, List<byte>>>();
-        J1939ToJsonConverter? J1939ToJsonConverter;
+        J1939ToStringConverter? J1939ToJsonConverter;
 
         #endregion Fields
 
@@ -40,7 +40,7 @@ namespace IECA
             canInterface.DataFrameReceived += program.OnMessageReceivedLoggerOnly;
 
             var configuration = ConfigurationDeserializer.GetConfigurationFromFile(CONFIGURATION_PATH);
-            program.J1939ToJsonConverter = new J1939ToJsonConverter(configuration);
+            program.J1939ToJsonConverter = new J1939ToStringConverter(configuration);
 
             Console.WriteLine($"Configuration file has {configuration.Count} defined PGN's");
 
