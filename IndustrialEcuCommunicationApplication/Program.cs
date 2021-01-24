@@ -29,7 +29,6 @@ namespace IECA
         #region Constants
 
         private const string CONFIGURATION_PATH = @"/home/pi/Desktop/ieca_configuration.json";
-        private const byte GLOBAL_DESTINATION_ADDRESS = 255;
 
         #endregion Constants
 

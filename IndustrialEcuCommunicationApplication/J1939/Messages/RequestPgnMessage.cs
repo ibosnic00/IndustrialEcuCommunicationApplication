@@ -12,16 +12,14 @@ namespace IECA.J1939.Messages
         private const int REQ_1_PRIORITY = 6;
         private const int REQ_1_DATA_PAGE = 0;
         private const int REQ_1_FORMAT = 234;
-        private const int REQ_1_SOURCE_ADDRESS = 254;
 
         private const int REQ_2_PRIORITY = 6;
         private const int REQ_2_DATA_PAGE = 0;
         private const int REQ_2_FORMAT = 201;
-        private const int REQ_2_SOURCE_ADDRESS = 254;
 
         private const int GLOBAL_DESTINATION_ADDRESS = 255;
 
-        public static J1939Message? RequestPgn(uint requestedPgn, byte destinationId = GLOBAL_DESTINATION_ADDRESS)
+        public static J1939Message? RequestPgn(uint requestedPgn, byte sourceAddress, byte destinationId = GLOBAL_DESTINATION_ADDRESS)
         {
             if (requestedPgn > HIGHEST_POSSIBLE_PGN_VALUE)
                 return null;
@@ -30,11 +28,11 @@ namespace IECA.J1939.Messages
                                                          dataPage: REQ_1_DATA_PAGE,
                                                          format: REQ_1_FORMAT,
                                                          specific: destinationId,
-                                                         sourceAddress: REQ_1_SOURCE_ADDRESS),
+                                                         sourceAddress: sourceAddress),
                                                          Helpers.ConvertPgnToList(requestedPgn));
         }
 
-        public static J1939Message? Request2Pgn(uint requestedPgn, bool useTransferPgn, byte destinationId = GLOBAL_DESTINATION_ADDRESS)
+        public static J1939Message? Request2Pgn(uint requestedPgn, bool useTransferPgn, byte sourceAddress, byte destinationId = GLOBAL_DESTINATION_ADDRESS)
         {
             if (requestedPgn > HIGHEST_POSSIBLE_PGN_VALUE)
                 return null;
@@ -47,7 +45,7 @@ namespace IECA.J1939.Messages
                                                          dataPage: REQ_2_DATA_PAGE,
                                                          format: REQ_2_FORMAT,
                                                          specific: destinationId,
-                                                         sourceAddress: REQ_2_SOURCE_ADDRESS),
+                                                         sourceAddress: sourceAddress),
                                                          dataToSend);
         }
     }

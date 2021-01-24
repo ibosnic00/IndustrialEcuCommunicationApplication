@@ -11,7 +11,6 @@ namespace IECA.J1939.Messages
         private const int ACK_PRIORITY = 6;
         private const int ACK_DATA_PAGE = 0;
         private const int ACK_FORMAT = 232;
-        private const int ACK_SOURCE_ADDRESS = 254;
         private const int GLOBAL_DESTINATION_ADDRESS = 255;
 
     }

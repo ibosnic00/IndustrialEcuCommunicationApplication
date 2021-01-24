@@ -9,9 +9,8 @@ namespace IECA.J1939.Messages.TransportProtocol
         private const byte TP_DT_PRIORITY = 7;
         private const byte TP_DT_DATA_PAGE = 0;
         private const byte TP_DT_FORMAT = 235;
-        private const byte TP_DT_SOURCE_ADDRESS = 254;
 
-        public DataTransferMessage(List<byte> data, byte destinationAddress, byte sourceAddress = TP_DT_SOURCE_ADDRESS) :
+        public DataTransferMessage(List<byte> data, byte destinationAddress, byte sourceAddress) :
             base(new ProtocolDataUnit(TP_DT_PRIORITY, TP_DT_DATA_PAGE, TP_DT_FORMAT, destinationAddress, sourceAddress), data)
         {
             if (data.Count != 8)
