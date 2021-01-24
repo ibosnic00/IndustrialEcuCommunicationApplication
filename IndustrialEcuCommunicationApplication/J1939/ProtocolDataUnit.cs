@@ -67,9 +67,9 @@ namespace IECA.J1939
         {
             uint result;
             if (Format < 240)
-                result = (uint)((DataPage << 9) + (Format << 8));
+                result = (uint)((DataPage << 16) + (Format << 8));
             else
-                result = (uint)((DataPage << 9) + (Format << 8) + Specific.Value);
+                result = (uint)((DataPage << 16) + (Format << 8) + Specific.Value);
 
             return result;
         }
