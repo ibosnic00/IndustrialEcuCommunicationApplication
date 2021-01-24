@@ -11,10 +11,19 @@ namespace IECA
 {
     class Program
     {
+        #region PGN's
+
+        private const uint REQUEST_PGN = 59904;
+        private const uint TP_DT_PGN = 60160;
+        private const uint TP_CM_PGN = 60416;
+        private const uint REQUEST_2_PGN = 51456;
+        private const uint ACK_PGN = 59392;
+
+        #endregion
+
         #region Constants
 
         private const string CONFIGURATION_PATH = @"/home/pi/Desktop/ieca_configuration.json";
-        private const uint REQUEST_PGN = 59904;
         private const byte GLOBAL_DESTINATION_ADDRESS = 255;
 
         #endregion Constants

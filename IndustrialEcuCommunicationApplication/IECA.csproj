@@ -10,15 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="J1939\Messages\Commands\" />
-    <Folder Include="J1939\Messages\BroadcastsOrResponses\" />
-    <Folder Include="J1939\Messages\Acknowledgment\" />
-    <Folder Include="J1939\Messages\ConnectionManagement\" />
-    <Folder Include="J1939\Messages\GroupFunctions\" />
-    <Folder Include="J1939\Messages\Requests\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
 

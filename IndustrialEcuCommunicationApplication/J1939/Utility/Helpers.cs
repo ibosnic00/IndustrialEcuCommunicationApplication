@@ -22,5 +22,24 @@ namespace IECA.J1939.Utility
 
             return new byte[] { msb, mb, lsb };
         }
+
+        public static List<byte> ConvertPgnToList(uint pgn)
+        {
+            var highByte = (byte)((pgn & 0xFF0000) >> 16);
+            var midByte = (byte)((pgn & 0xFF00) >> 8);
+            var lowByte = (byte)(pgn & 0xFF);
+            return new List<byte>() { lowByte, midByte, highByte };
+        }
+
+        public static uint? GetPgnFromList(List<byte>? inList)
+        {
+            if (inList == null || inList.Count != 3)
+                return null;
+
+            var highByte = inList[2];
+            var midByte = inList[1];
+            var lowByte = inList[0];
+            return (uint)(highByte << 16 | midByte << 8 | lowByte);
+        }
     }
 }

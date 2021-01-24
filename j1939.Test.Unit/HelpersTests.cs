@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using IECA;
+using IECA.CANBus.Utility;
 
 namespace j1939.Test.Unit
 {

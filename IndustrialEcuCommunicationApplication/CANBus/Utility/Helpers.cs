@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace IECA
+namespace IECA.CANBus.Utility
 {
     public static class Helpers
     {
