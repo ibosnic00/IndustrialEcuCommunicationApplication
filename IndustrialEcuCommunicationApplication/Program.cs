@@ -2,16 +2,16 @@
 using IECA.J1939.Messages;
 using IECA.J1939.Messages.TransportProtocol;
 using IECA.J1939.Configuration;
-using IECA.J1939.Procedures;
+using IECA.J1939.Services;
 using IECA.J1939.Utility;
 using IECA.CANBus;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IECA
 {
@@ -71,6 +71,7 @@ namespace IECA
             program.MultiFrameMessageReceived += program.OnMultiFrameMessageReceived;
 
             program.TryToClaimAddress();
+            program.BackgroundRequestSender().Build().Run();
 
             _ = Task.Run(() =>
             {
@@ -92,6 +93,13 @@ namespace IECA
 
 
         #region Event Handlers
+
+        private IHostBuilder BackgroundRequestSender() =>
+               Host.CreateDefaultBuilder().ConfigureServices(services =>
+                   {
+                       services.AddHostedService(x =>
+                       new BackgroundRequestSendService(AppConfig!.PgnsForRequesting, CanInterface!, ClaimedAddress));
+                   });
 
         private void OnMultiFrameMessageReceived(object? sender, MultiFrameMessage msg)
         {
