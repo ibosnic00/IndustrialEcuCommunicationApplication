@@ -6,6 +6,31 @@ namespace j1939.Test.Unit
     class EcuNameTests
     {
         [Test]
+        public void ToRawFormat_CooperhillName_SuccessfulConversion()
+        {
+            bool arbitraryAddressCapable = true;
+            byte industryGroup = 0;
+            byte vehicleSystemInstance = 0;
+            byte vehicalSystem = 0b0111_1111;
+            bool reserved = false;
+            byte function = 255;
+            byte functionInstance = 0;
+            byte ecuInstance = 0;
+            uint manufacturerCode = 2047;
+            uint identityNumber = 2097151;
+
+            var expected = 0x80FEFF00FFFFFFFF;
+
+            var j1939Name = new EcuName(arbitraryAddressCapable, industryGroup, vehicleSystemInstance,
+            vehicalSystem, reserved, function, functionInstance, ecuInstance,
+            manufacturerCode, identityNumber);
+
+            var received = j1939Name.ToRawFormat();
+
+            Assert.AreEqual(expected, received);
+        }
+
+        [Test]
         public void ToRawFormat_ArbitraryAddressCapableTest_SuccessfulConversion()
         {
             bool arbitraryAddressCapable = true;

@@ -1,4 +1,5 @@
-﻿using IECA.J1939.Utility;
+﻿using IECA.J1939.Configuration;
+using IECA.J1939.Utility;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,10 +23,8 @@ namespace IECA.J1939.Messages.TransportProtocol
 
     public class BrodcastAnnounceMessage : ConnectionManagementMessage
     {
-        private const byte BAM_DESTINATION_ADDRESS = 255;
-
         public BrodcastAnnounceMessage(List<byte> data, byte sourceAddress)
-            : base((byte)ConnectionManagementMessageControlBytes.BAM, data, BAM_DESTINATION_ADDRESS, sourceAddress)
+            : base((byte)ConnectionManagementMessageControlBytes.BAM, data, StandardData.GLOBAL_DESTINATION_ADDRESS, sourceAddress)
         {
             if (data.Count != 8)
                 throw new Exception("Invalid Brodcast Announce Message");

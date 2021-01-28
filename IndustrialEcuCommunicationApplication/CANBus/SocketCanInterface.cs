@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using IECA.CANBus.Utility;
 
-namespace IECA
+namespace IECA.CANBus
 {
-    public class SocketCanInterface : IDisposable
+    public class SocketCanInterface : ICanInterface
     {
         #region Constants
 
@@ -54,7 +54,7 @@ namespace IECA
 
         #region Public Methods
 
-        public void StartReceiverThread()
+        public void Initialize()
         {
             shouldReceiveThreadBeAlive = true;
             canDumpProcess = new Process();
@@ -79,7 +79,7 @@ namespace IECA
             });
         }
 
-        public void StopReceiverThread()
+        public void Deinitialize()
         {
             shouldReceiveThreadBeAlive = false;
             canDumpProcess?.Dispose();

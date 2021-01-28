@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using IECA;
 using IECA.CANBus.Utility;
+using IECA.CANBus;
 
 namespace j1939.Test.Unit
 {
@@ -83,6 +84,25 @@ namespace j1939.Test.Unit
             var result = Helpers.CanMessageToCandumpString(messageToSend);
 
             Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        public void GetRawEcuName_FromCooperhiltechName_SuccessfullConversion()
+        {
+            var expected = 0x80FEFF00FFFFFFFF;
+            var received = IECA.J1939.Utility.Helpers.GetRawEcuName(new System.Collections.Generic.List<byte>() { 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFE, 0x80 });
+
+            Assert.AreEqual(expected, received);
+        }
+
+        [Test]
+        public void GetRawEcuName_ToCooperhiltechName_SuccessfullConversion()
+        {
+            var expected = new System.Collections.Generic.List<byte>() { 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFE, 0x80 };
+            var received = IECA.J1939.Utility.Helpers.ConvertEcuNameToList(0x80FEFF00FFFFFFFF);
+
+            for(int i=0; i< expected.Count;i++)
+                Assert.AreEqual(expected[i], received[i]);
         }
     }
 }

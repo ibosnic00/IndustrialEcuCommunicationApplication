@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace IECA
+namespace IECA.CANBus
 {
     public readonly struct CanMessage : IEquatable<CanMessage>
     {
