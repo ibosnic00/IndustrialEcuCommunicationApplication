@@ -1,4 +1,5 @@
-﻿using IECA.J1939;
+﻿using IECA.J1939.Configuration;
+using IECA.J1939;
 using System;
 using System.Collections;
 using System.Collections.Generic;

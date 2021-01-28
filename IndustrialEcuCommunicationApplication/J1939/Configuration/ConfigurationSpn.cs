@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace IECA.J1939
+namespace IECA.J1939.Configuration
 {
     public class ConfigurationSpn
     {

@@ -19,30 +19,10 @@ namespace IECA
     {
         #region Constants
 
-        // TODO: This will be part of external configuration
-        private const string CONFIGURATION_PATH = @"/home/pi/Desktop/ieca_configuration.json";
-        private const byte MIN_ADDRESS = 128;
-        private const byte WANTED_ADDRESS = 128;
-        private const byte MAX_ADDRESS = 225;
-        private const int ADDRES_CLAIM_WAIT_PERIOD_IN_MS = 1250;
+        private const string APP_CFG_PATH = @"/home/pi/Desktop/ieca_app_configuration.json";
 
         #endregion Constants
 
-        #region EcuNameSetup
-
-        // TODO: This will be part of external configuration
-        static bool arbitraryAddressCapable = true;
-        static byte industryGroup = 0;
-        static byte vehicleSystemInstance = 0;
-        static byte vehicalSystem = 0b0111_1111;
-        static bool reserved = false;
-        static byte function = 0b1111_1111;
-        static byte functionInstance = 0;
-        static byte ecuInstance = 1;
-        static uint manufacturerCode = 0;
-        static uint identityNumber = 0b1_1111_1111_1111_1111_1111;
-
-        #endregion
 
         #region Events
 
@@ -55,6 +35,7 @@ namespace IECA
 
         J1939ToStringConverter? J1939ToStringConverter;
         List<MultiFrameMessage>? MfMessagesBuffer;
+        ApplicationConfiguration? AppConfig;
         ICanInterface? CanInterface;
         Dictionary<byte, EcuName>? KnownNetworkNodes;
         byte ClaimedAddress = StandardData.NULL_ADDRESS;
@@ -71,13 +52,18 @@ namespace IECA
             var program = new Program();
             var selectedChannel = CanChannel.can0;
 
-            var configuration = ConfigurationDeserializer.GetConfigurationFromFile(CONFIGURATION_PATH);
-            program.J1939ToStringConverter = new J1939ToStringConverter(configuration);
+            var appConfig = ApplicationConfigurationDeserializer.GetConfigurationFromFile(APP_CFG_PATH);
+            program.AppConfig = appConfig;
+            var dataConfiguration = DataConfigurationDeserializer.GetConfigurationFromFile(program.AppConfig.DataConfigurationPath);
+            program.J1939ToStringConverter = new J1939ToStringConverter(dataConfiguration);
 
             program.MfMessagesBuffer = new List<MultiFrameMessage>();
             program.KnownNetworkNodes = new Dictionary<byte, EcuName>();
             program.AddressClaimSuccessfull = false;
-            program.EcuName = new EcuName(arbitraryAddressCapable, industryGroup, vehicleSystemInstance, vehicalSystem, reserved, function, functionInstance, ecuInstance, manufacturerCode, identityNumber);
+            program.EcuName = new EcuName(program.AppConfig.ArbitraryAddressCapable, program.AppConfig.IndustryGroup,
+                program.AppConfig.VehicleSystemInstance, program.AppConfig.VehicalSystem, reserved: false,
+                program.AppConfig.Function, program.AppConfig.FunctionInstance, program.AppConfig.EcuInstance,
+                program.AppConfig.ManufacturerCode, program.AppConfig.IdentityNumber);
 
             program.CanInterface = new SocketCanInterface(selectedChannel);
             program.CanInterface.Initialize();
@@ -200,11 +186,11 @@ namespace IECA
             _ = Task.Run(() =>
             {
                 CanInterface?.SendCanMessage(Helpers.ConvertSingleFrameJ1939MsgToCanMsg(ConnectionProcedures.SendRequestForAddressClaimMessage()!));
-                Thread.Sleep(ADDRES_CLAIM_WAIT_PERIOD_IN_MS);
+                Thread.Sleep(AppConfig!.AddressClaimWaitPeriodMs);
 
-                if (KnownNetworkNodes != null && KnownNetworkNodes.ContainsKey(WANTED_ADDRESS))
+                if (KnownNetworkNodes != null && KnownNetworkNodes.ContainsKey(AppConfig!.WantedAddress))
                 {
-                    for (byte i = MIN_ADDRESS; i <= MAX_ADDRESS; i++)
+                    for (byte i = AppConfig!.MinAddress; i <= AppConfig!.MaxAddress; i++)
                     {
                         if (!KnownNetworkNodes.ContainsKey(i))
                         {
@@ -214,7 +200,7 @@ namespace IECA
                     }
                 }
                 else
-                    ClaimedAddress = WANTED_ADDRESS;
+                    ClaimedAddress = AppConfig!.WantedAddress;
 
                 if (ClaimedAddress != StandardData.NULL_ADDRESS)
                 {

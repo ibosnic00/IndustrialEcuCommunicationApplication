@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using IECA;
 using IECA.J1939;
+using IECA.J1939.Configuration;
 using System.IO;
 using System.Linq;
 
@@ -26,7 +27,7 @@ namespace j1939.Test.Unit
         {
             var slnPath = TryGetSolutionDirectoryInfo();
             var configurationPath = Path.Combine(slnPath.FullName, "IndustrialEcuCommunicationApplication", "Resources", "ieca_configuration.json");
-            var configuration = ConfigurationDeserializer.GetConfigurationFromFile(configurationPath);
+            var configuration = DataConfigurationDeserializer.GetConfigurationFromFile(configurationPath);
             J1939ToStringConverter = new J1939ToStringConverter(configuration);
         }
 
