@@ -230,7 +230,16 @@ namespace IECA
         {
             if (AddressClaimSuccessfull)
             {
-                // add logic for comparing addresses and if == claimed - compare names
+                if (addressClaimedMessage.PDU.SourceAddress == ClaimedAddress)
+                {
+                    if (addressClaimedMessage.EcuName.ToRawFormat() < EcuName!.ToRawFormat())
+                    {
+                        AddressClaimSuccessfull = false;
+                        TryToClaimAddress();
+                    }
+                    else
+                        CanInterface?.SendCanMessage(Helpers.ConvertSingleFrameJ1939MsgToCanMsg(new AddressClaimedMessage(EcuName!.ToRawFormat(), ClaimedAddress)));
+                }
             }
             else
             {
