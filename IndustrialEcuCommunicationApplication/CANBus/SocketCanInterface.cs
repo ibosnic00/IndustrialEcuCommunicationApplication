@@ -60,7 +60,7 @@ namespace IECA.CANBus
             canDumpProcess = new Process();
             canDumpProcess.StartInfo.FileName = CANDUMP_FILE_NAME;
             canDumpProcess.StartInfo.UseShellExecute = false;
-            canDumpProcess.StartInfo.Arguments = "-x" + selectedChannel.ToString();
+            canDumpProcess.StartInfo.Arguments = selectedChannel.ToString() + " -x";
             canDumpProcess.StartInfo.RedirectStandardOutput = true;
             canDumpProcess.StartInfo.CreateNoWindow = true;
             _ = canDumpProcess.Start();

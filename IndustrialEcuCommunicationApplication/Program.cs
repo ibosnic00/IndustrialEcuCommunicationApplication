@@ -71,12 +71,12 @@ namespace IECA
             program.MultiFrameMessageReceived += program.OnMultiFrameMessageReceived;
 
             program.TryToClaimAddress();
-            program.BackgroundRequestSender().Build().Run();
+            //program.BackgroundRequestSender().Build().Run();
 
-            _ = Task.Run(() =>
+            // main program loop
+            while (true)
             {
-                // main program loop
-                while (true)
+                _ = Task.Run(() =>
                 {
                     // if any multiframe message is fully received
                     if (program.MfMessagesBuffer.Count != 0
@@ -85,8 +85,8 @@ namespace IECA
                         var receivedMFMessage = program.MfMessagesBuffer.SingleOrDefault(msg => msg.IsMessageComplete == true);
                         program.MultiFrameMessageReceived?.Invoke(program, receivedMFMessage);
                     }
-                };
-            });
+                });
+            };
         }
 
         #endregion Application Logic
@@ -158,10 +158,6 @@ namespace IECA
                 // currently not in use
             }
             else if (receivedPdu.ParameterGroupNumber == StandardPgns.ACK_PGN)
-            {
-                // currently not in use
-            }
-            else if (receivedPdu.ParameterGroupNumber == StandardPgns.COMMANDED_ADDR_PGN)
             {
                 // currently not in use
             }
