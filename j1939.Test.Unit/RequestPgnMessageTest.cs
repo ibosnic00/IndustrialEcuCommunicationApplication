@@ -11,24 +11,17 @@ namespace j1939.Test.Unit
         public void RequestPgn_ValidPgn_ValidJ1939Message()
         {
             byte expectedDestination = 2;
-            uint expectedPgn = 0x112233;
-            var receivedMessage = RequestPgnMessage.RequestPgn(expectedPgn, expectedDestination);
-            var receivedDestination = receivedMessage?.PDU.Specific.Value;
+            uint expectedPgn = 50567;
+            byte expectedSource = 129;
 
+            var receivedMessage = new RequestPgnMessage(expectedPgn, expectedSource, expectedDestination);
+            var receivedDestination = receivedMessage?.PDU.Specific.Value;
             var receivedPgn = Helpers.GetPgnFromList(receivedMessage?.Data);
+            var receivedSource = receivedMessage?.PDU.SourceAddress;
 
             Assert.AreEqual(expectedDestination, receivedDestination);
             Assert.AreEqual(expectedPgn, receivedPgn);
-        }
-
-        [Test]
-        public void RequestPgn_InvalidPgn_NullJ1939Message()
-        {
-            byte expectedDestination = 2;
-            uint expectedPgn = 0x11223344;
-            var receivedMessage = RequestPgnMessage.RequestPgn(expectedPgn, expectedDestination);
-
-            Assert.AreEqual(null, receivedMessage);
+            Assert.AreEqual(expectedSource, receivedSource);
         }
     }
 }
