@@ -60,7 +60,7 @@ namespace IECA.CANBus
             canDumpProcess = new Process();
             canDumpProcess.StartInfo.FileName = CANDUMP_FILE_NAME;
             canDumpProcess.StartInfo.UseShellExecute = false;
-            canDumpProcess.StartInfo.Arguments = selectedChannel.ToString();
+            canDumpProcess.StartInfo.Arguments = selectedChannel.ToString() + " -x";
             canDumpProcess.StartInfo.RedirectStandardOutput = true;
             canDumpProcess.StartInfo.CreateNoWindow = true;
             _ = canDumpProcess.Start();
@@ -73,8 +73,8 @@ namespace IECA.CANBus
                 {
                     var recCanMsg = Helpers.CandumpStringToCanMessage(lineInOutput);
 
-                    if (recCanMsg.MessageType == CanMessageType.Data)
-                        DataFrameReceived?.Invoke(this, recCanMsg);
+                    if (recCanMsg is CanMessage canMessage && canMessage.MessageType == CanMessageType.Data)
+                        DataFrameReceived?.Invoke(this, canMessage!);
                 }
             });
         }
