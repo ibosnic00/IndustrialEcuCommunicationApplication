@@ -1,5 +1,6 @@
 ﻿using IECA.Application;
 using IECA.CANBus;
+using IECA.Logging;
 using System.Threading.Tasks;
 
 namespace IECA
@@ -11,7 +12,8 @@ namespace IECA
         static void Main(string[] args)
         {
             var mainApp = new IndustrialEcuCommunciationApp(canInterface: new SocketCanInterface(CanChannel.can0),
-                                                            appConfigurationPath: APP_CFG_PATH);
+                                                            appConfigurationPath: APP_CFG_PATH,
+                                                            logger: new SerilogLogger());
             mainApp.Initialize();
 
             while (true)
