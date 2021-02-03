@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using IECA.J1939.Utility;
 
 namespace IECA
 {
@@ -27,18 +28,18 @@ namespace IECA
             try
             {
                 result += pgnFromConfig.FullName;
-                var dataConvertedToBits = ConvertByteListToStringOfBits(j1939Message.Data);
+                var dataConvertedToBits = Helpers.ConvertByteListToStringOfBits(j1939Message.Data);
                 foreach (var spnFromConfig in pgnFromConfig.Spns)
                 {
                     result += " " + spnFromConfig.FullName + ": ";
 
                     if (spnFromConfig.Multiplier == null && spnFromConfig.Offset == null)
-                        result += GetRawValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
+                        result += Helpers.GetRawValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
                     else
                     {
                         var multiplier = spnFromConfig.Multiplier;
                         var offset = spnFromConfig.Offset;
-                        var wantedValue = GetNumberValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
+                        var wantedValue = Helpers.GetNumberValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);
                         if (wantedValue == null)
                             result = "Inv.cfg";
                         else
@@ -54,49 +55,5 @@ namespace IECA
 
             return result;
         }
-
-        #region Helper Methods
-
-        static string ConvertByteListToStringOfBits(List<byte> byteList)
-        {
-            string result = string.Empty;
-            foreach (var singleByte in byteList)
-            {
-                result += Convert.ToString(singleByte, 2).PadLeft(8, '0');
-            }
-            return result;
-        }
-
-        static uint? GetNumberValueFromBitArray(string stringBitArray, uint startIndex, uint len)
-        {
-            if (stringBitArray.Length < startIndex + len)
-                return null;
-            if (len > 8)
-            {
-                var reversedEndianStringitArray = string.Empty;
-                uint numberOfBytes = len / 8;
-                uint leftover = len % 8;
-
-                if (leftover != 0)
-                    reversedEndianStringitArray = stringBitArray.Substring((int)(startIndex + numberOfBytes * 8), (int)leftover);
-                for (int i = 1; i <= numberOfBytes; i++)
-                    reversedEndianStringitArray += stringBitArray.Substring((int)(startIndex + len - i * 8 + leftover), (int)8);
-
-                return Convert.ToUInt32(reversedEndianStringitArray.Substring((int)startIndex, (int)len), 2); ;
-            }
-            else
-                return Convert.ToUInt32(stringBitArray.Substring((int)startIndex, (int)len), 2);
-        }
-
-        static string GetRawValueFromBitArray(string stringBitArray, uint startIndex, uint len)
-        {
-            if (stringBitArray.Length < startIndex + len)
-                return "Inv.cfg";
-
-            return stringBitArray.Substring((int)startIndex, (int)len);
-        }
-
-        #endregion
-
     }
 }

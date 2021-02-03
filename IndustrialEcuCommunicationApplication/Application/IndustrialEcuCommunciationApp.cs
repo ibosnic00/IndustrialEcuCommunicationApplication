@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using IECA.Logging;
+using IECA.J1939.Messages.Diagnostic;
 
 namespace IECA.Application
 {
@@ -166,6 +167,12 @@ namespace IECA.Application
                 var addressClaimedMessage = new AddressClaimedMessage(receivedPdu, msg.Data.ToList());
                 HandleReceivedAddressClaimedMessage(addressClaimedMessage);
             }
+            else if (receivedPdu.ParameterGroupNumber == StandardPgns.DM1_PGN || receivedPdu.ParameterGroupNumber == StandardPgns.DM2_PGN)
+            {
+                // Single-frame diagnostic messages
+                var activeDiagnosticTroubleCodeMessage = new ActiveDiagnosticTroubleCodesMessage(receivedPdu, msg.Data.ToList());
+                HandleReceivedActiveDiagnosticTroubleCodesMessage(activeDiagnosticTroubleCodeMessage);
+            }
             else
             {
                 var receivedMessage = new J1939Message(receivedPdu, msg.Data.ToList());
@@ -281,9 +288,22 @@ namespace IECA.Application
                                                                 && mfMsg.PDU.Specific.Value == rcvMsg.PDU.Specific.Value);
         }
 
+        private void HandleReceivedActiveDiagnosticTroubleCodesMessage(ActiveDiagnosticTroubleCodesMessage activeDiagnosticTroubleCodeMessage)
+        {
+            //TODO: pretify dtc logger
+            foreach (var dtcRecord in activeDiagnosticTroubleCodeMessage.DtcRecords)
+                _logger.LogInfo($"DM1 - stat: {dtcRecord.LampStatus}, spn: {dtcRecord.DTC.SuspectParameterNumber}, fmi: {dtcRecord.DTC.FailureModeIdentifier}, oc: {dtcRecord.DTC.OccurenceCount}");
+        }
+
         private void HandleReceivedCompletedJ1939Message(J1939Message rcvMsg)
         {
-            if (_j1939ToStringConverter != null)
+            if (rcvMsg.PDU.ParameterGroupNumber == StandardPgns.DM1_PGN || rcvMsg.PDU.ParameterGroupNumber == StandardPgns.DM2_PGN)
+            {
+                // Multiple-frame diagnostic messages
+                var activeDiagnosticTroubleCodeMessage = new ActiveDiagnosticTroubleCodesMessage(rcvMsg.PDU, rcvMsg.Data);
+                HandleReceivedActiveDiagnosticTroubleCodesMessage(activeDiagnosticTroubleCodeMessage);
+            }
+            else if (_j1939ToStringConverter != null)
                 _logger.LogInfo(_j1939ToStringConverter.ConvertJ1939MessageToHumanReadableFormat(rcvMsg));
         }
 
