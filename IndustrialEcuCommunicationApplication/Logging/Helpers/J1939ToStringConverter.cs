@@ -30,7 +30,7 @@ namespace IECA
                 var dataConvertedToBits = ConvertByteListToStringOfBits(j1939Message.Data);
                 foreach (var spnFromConfig in pgnFromConfig.Spns)
                 {
-                    result += "\n" + spnFromConfig.FullName + ": ";
+                    result += " " + spnFromConfig.FullName + ": ";
 
                     if (spnFromConfig.Multiplier == null && spnFromConfig.Offset == null)
                         result += GetRawValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);

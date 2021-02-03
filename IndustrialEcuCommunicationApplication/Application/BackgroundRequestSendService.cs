@@ -34,7 +34,6 @@ namespace IECA.Application
                    if (j1939MessageForSending?.Data != null && _app.AddressClaimSuccessfull)
                    {
                        _app.CanInterface?.SendCanMessage(Helpers.ConvertSingleFrameJ1939MsgToCanMsg(j1939MessageForSending));
-                       Console.WriteLine("SentMessage " + requestPgn.ParameterGroupNumber.ToString());
                    }
 
                }, null, dueTime: 0, requestPgn.RequestRateMilliseconds));

@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using IECA.Logging;
 
 namespace IECA.Application
 {
@@ -32,21 +33,24 @@ namespace IECA.Application
 
         List<MultiFrameMessage>? _mfMessagesBuffer;
         J1939ToStringConverter? _j1939ToStringConverter;
-        ApplicationConfiguration _appConfig;
         Dictionary<byte, EcuName>? _knownNetworkNodes;
         EcuName? _ecuName;
+
+        readonly ApplicationConfiguration _appConfig;
+        readonly ILogger _logger;
 
         #endregion Fields
 
 
         #region Constructors
 
-        public IndustrialEcuCommunciationApp(ICanInterface canInterface, string appConfigurationPath)
+        public IndustrialEcuCommunciationApp(ICanInterface canInterface, string appConfigurationPath, ILogger logger)
         {
             var appConfig = ApplicationConfigurationDeserializer.GetConfigurationFromFile(appConfigurationPath);
             _appConfig = appConfig;
             CanInterface = canInterface;
             MultiFrameMessageReceived += OnMultiFrameMessageReceived;
+            _logger = logger;
         }
 
         #endregion Constructors
@@ -56,6 +60,8 @@ namespace IECA.Application
 
         public void Initialize()
         {
+            _logger.Initialize();
+
             var dataConfig = DataConfigurationDeserializer.GetConfigurationFromFile(_appConfig.DataConfigurationPath);
             _j1939ToStringConverter = new J1939ToStringConverter(dataConfig);
 
@@ -99,7 +105,7 @@ namespace IECA.Application
 
             var receivedPdu = msg.PDU;
 
-            Console.WriteLine("Received J1939 message with PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
+            _logger.LogDebug("Received J1939 message with PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
 
             var receivedMessage = new J1939Message(receivedPdu, msg.Data.ToList());
             HandleReceivedCompletedJ1939Message(receivedMessage);
@@ -112,7 +118,7 @@ namespace IECA.Application
                 return;
 
             var receivedPdu = ProtocolDataUnit.FromCanExtIdentifierFormat(msg.ID);
-            Console.WriteLine("Received J1939 message with PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
+            _logger.LogDebug("Received J1939 message with PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
 
             if (receivedPdu.ParameterGroupNumber == StandardPgns.TP_CM_PGN)
             {
@@ -278,7 +284,7 @@ namespace IECA.Application
         private void HandleReceivedCompletedJ1939Message(J1939Message rcvMsg)
         {
             if (_j1939ToStringConverter != null)
-                Console.WriteLine(_j1939ToStringConverter.ConvertJ1939MessageToHumanReadableFormat(rcvMsg));
+                _logger.LogInfo(_j1939ToStringConverter.ConvertJ1939MessageToHumanReadableFormat(rcvMsg));
         }
 
         #endregion
