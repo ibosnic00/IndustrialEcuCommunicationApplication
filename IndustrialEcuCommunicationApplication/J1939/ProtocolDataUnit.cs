@@ -19,10 +19,21 @@ namespace IECA.J1939
             Reserved = reserved;
         }
 
+        public ProtocolDataUnit(uint pgn, byte sourceAddress)
+        {
+            SourceAddress = sourceAddress;
+            DataPage = Convert.ToByte(pgn >> 16 & 0b0001);
+            Format = Convert.ToByte(pgn >> 8 & 0b1111_1111);
+            Specific = SolvePDUSpecific(Convert.ToByte(pgn & 0b1111_1111));
+            if (CalculatePgn() != pgn)
+                throw new Exception("Invalid Protocol Data Unit " + pgn);
+            ParameterGroupNumber = pgn;
+        }
+
 
         #region Properties
 
-        public byte Priority { get; }
+        public byte? Priority { get; }
         public byte DataPage { get; }
         public byte Format { get; }
         public IPDUSpecific Specific { get; }
@@ -67,9 +78,9 @@ namespace IECA.J1939
         {
             uint result;
             if (Format < 240)
-                result = (uint)((DataPage << 9) + (Format << 8));
+                result = (uint)((DataPage << 16) + (Format << 8));
             else
-                result = (uint)((DataPage << 9) + (Format << 8) + Specific.Value);
+                result = (uint)((DataPage << 16) + (Format << 8) + Specific.Value);
 
             return result;
         }

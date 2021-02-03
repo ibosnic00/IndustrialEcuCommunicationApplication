@@ -1,4 +1,5 @@
-﻿using IECA.J1939;
+﻿using IECA.J1939.Configuration;
+using IECA.J1939;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,9 +8,9 @@ using System.Text;
 
 namespace IECA
 {
-    public class J1939ToJsonConverter
+    public class J1939ToStringConverter
     {
-        public J1939ToJsonConverter(List<ConfigurationPgn> configuration)
+        public J1939ToStringConverter(List<ConfigurationPgn> configuration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
@@ -29,7 +30,7 @@ namespace IECA
                 var dataConvertedToBits = ConvertByteListToStringOfBits(j1939Message.Data);
                 foreach (var spnFromConfig in pgnFromConfig.Spns)
                 {
-                    result += "\n" + spnFromConfig.FullName + ": ";
+                    result += " " + spnFromConfig.FullName + ": ";
 
                     if (spnFromConfig.Multiplier == null && spnFromConfig.Offset == null)
                         result += GetRawValueFromBitArray(dataConvertedToBits, spnFromConfig.DataStartIndex, spnFromConfig.BitLength);

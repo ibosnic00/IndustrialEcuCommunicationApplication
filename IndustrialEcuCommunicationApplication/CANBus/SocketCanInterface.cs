@@ -4,10 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using IECA.CANBus.Utility;
 
-namespace IECA
+namespace IECA.CANBus
 {
-    public class SocketCanInterface : IDisposable
+    public class SocketCanInterface : ICanInterface
     {
         #region Constants
 
@@ -53,13 +54,13 @@ namespace IECA
 
         #region Public Methods
 
-        public void StartReceiverThread()
+        public void Initialize()
         {
             shouldReceiveThreadBeAlive = true;
             canDumpProcess = new Process();
             canDumpProcess.StartInfo.FileName = CANDUMP_FILE_NAME;
             canDumpProcess.StartInfo.UseShellExecute = false;
-            canDumpProcess.StartInfo.Arguments = selectedChannel.ToString();
+            canDumpProcess.StartInfo.Arguments = selectedChannel.ToString() + " -x";
             canDumpProcess.StartInfo.RedirectStandardOutput = true;
             canDumpProcess.StartInfo.CreateNoWindow = true;
             _ = canDumpProcess.Start();
@@ -72,13 +73,13 @@ namespace IECA
                 {
                     var recCanMsg = Helpers.CandumpStringToCanMessage(lineInOutput);
 
-                    if (recCanMsg.MessageType == CanMessageType.Data)
-                        DataFrameReceived?.Invoke(this, recCanMsg);
+                    if (recCanMsg is CanMessage canMessage && canMessage.MessageType == CanMessageType.Data)
+                        DataFrameReceived?.Invoke(this, canMessage!);
                 }
             });
         }
 
-        public void StopReceiverThread()
+        public void Deinitialize()
         {
             shouldReceiveThreadBeAlive = false;
             canDumpProcess?.Dispose();

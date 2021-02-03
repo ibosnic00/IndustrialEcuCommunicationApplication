@@ -12,7 +12,12 @@ namespace IECA.J1939
         }
 
         public ProtocolDataUnit PDU { get; }
-        public List<byte> Data { get; }
+        public List<byte> Data { get; private set; }
+
+        public void AddPacketizedData(List<byte> packetizedData)
+        {
+            Data.AddRange(packetizedData);
+        }
 
         #region IEquatable implementation
 

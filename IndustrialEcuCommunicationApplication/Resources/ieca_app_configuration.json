@@ -1,0 +1,94 @@
+{
+    "WantedAddress": 128,
+    "MinAddress": 128,
+    "MaxAddress": 240,
+    "DataConfigurationPath": "/home/pi/Desktop/ieca_configuration.json",
+    "AddressClaimWaitPeriodMs": 1250,
+    "ArbitraryAddressCapable": true,
+    "IndustryGroup": 0,
+    "VehicleSystemInstance": 0,
+    "VehicalSystem": 127,
+    "Function": 255,
+    "FunctionInstance": 0,
+    "EcuInstance": 0,
+    "ManufacturerCode": 2020,
+    "IdentityNumber": 55214,
+    "PgnsForRequesting": [
+        {
+            "ParameterGroupNumber": 61443,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 61444,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 64976,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 64988,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65031,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65101,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65130,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65170,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65177,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65244,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65253,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65257,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65262,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65263,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65266,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65270,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65271,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65272,
+            "RequestRateMilliseconds": 500
+        },
+        {
+            "ParameterGroupNumber": 65276,
+            "RequestRateMilliseconds": 500
+        }
+    ]
+}

@@ -3,36 +3,31 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace IECA
+namespace IECA.CANBus.Utility
 {
     public static class Helpers
     {
-        public static CanMessage CandumpStringToCanMessage(string candumpLine)
+        public static CanMessage? CandumpStringToCanMessage(string candumpLine)
         {
             Regex canDumpRegex = new Regex(@"can(?'channel'\d)\W+(?'id'\d|\w*)\W+(?'len'\d)\W+(?'data'.*)");
-            var matchInLine = canDumpRegex.Match(candumpLine);
+            Regex canDumpOnlyRxRegex = new Regex(@"can(?'channel'\d)\W+RX\W-\W-\W+(?'id'\d|\w*)\W+(?'len'\d)\W+(?'data'.*)");
+            var matchInLine = canDumpOnlyRxRegex.Match(candumpLine);
 
             if (matchInLine.Success)
             {
                 var groupsFoundInLine = matchInLine.Groups;
                 var parsedId = groupsFoundInLine["id"].Value;
-                Console.WriteLine(parsedId);
                 var parsedLen = groupsFoundInLine["len"].Value;
-                Console.WriteLine(parsedLen);
                 var parsedData = groupsFoundInLine["data"].Value;
-                Console.WriteLine(parsedData);
 
                 return new CanMessage(Convert.ToUInt32(parsedId, 16),
                     (uint)parsedId.Length,
                     Convert.ToByte(parsedLen, 16),
                     GetDataBytesFromStringValue(parsedData, Convert.ToByte(parsedLen, 16)),
                     CanMessageType.Data);
-
             }
             else
-            {
-                throw new Exception("Received invalid CANDUMP message");
-            }
+                return null;
         }
 
         public static string? CanMessageToCandumpString(CanMessage canMessage)

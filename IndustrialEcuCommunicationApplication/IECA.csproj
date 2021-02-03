@@ -7,19 +7,14 @@
     <Company>ivan.bosnic.st@gmail.com</Company>
     <nullable>enable</nullable>
     <Description>Industrial Ecu Communication Application</Description>
+    <ApplicationIcon>ieca.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="J1939\Messages\Commands\" />
-    <Folder Include="J1939\Messages\BroadcastsOrResponses\" />
-    <Folder Include="J1939\Messages\Acknowledgment\" />
-    <Folder Include="J1939\Messages\ConnectionManagement\" />
-    <Folder Include="J1939\Messages\GroupFunctions\" />
-    <Folder Include="J1939\Messages\Requests\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
   </ItemGroup>
 
 </Project>
