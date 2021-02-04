@@ -12,7 +12,7 @@ namespace IECA
         public CanChannel SelectedCanChannel { get; set; }
 
         [Option('f', "appCfgFile", Required = true, HelpText = "Provide path to app configuration file (.json) which will be parsed. Eg. \"home\\pi\\someFile.json\"")]
-        public string TomlFilePath { get; set; } = null!;
+        public string CfgFilePath { get; set; } = null!;
     }
 
     class Program
@@ -25,7 +25,7 @@ namespace IECA
                 .WithParsed(parsedOptions => cmdLineOptions = parsedOptions);
 
             var mainApp = new IndustrialEcuCommunciationApp(canInterface: new SocketCanInterface(cmdLineOptions.SelectedCanChannel),
-                                                            appConfigurationPath: cmdLineOptions.TomlFilePath,
+                                                            appConfigurationPath: cmdLineOptions.CfgFilePath,
                                                             logger: new SerilogLogger());
             mainApp.Initialize();
 
