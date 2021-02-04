@@ -38,7 +38,7 @@ namespace j1939.Test.Unit
             var j1939Message = new J1939Message(pdu,
                 new System.Collections.Generic.List<byte> { 0xFF, 0xFF, 0xFF, 0xFF });
             var parsedMessage = J1939ToStringConverter?.ConvertJ1939MessageToHumanReadableFormat(j1939Message);
-            var expectedMessage = "Torque/Speed Control 1\nOverride Control Mode:[11]\nRequested Speed Control Conditions: [11]\nOverride Control Mode Priority: [11]\nRequested Speed/Speed Limit: 8191.875\nRequested Torque/Torque Limit: 130";
+            var expectedMessage = "Torque/Speed Control 1 Override Control Mode:[11] Requested Speed Control Conditions: [11] Override Control Mode Priority: [11] Requested Speed/Speed Limit: 8191.875 Requested Torque/Torque Limit: 130";
 
             Assert.IsTrue(string.Compare(expectedMessage, parsedMessage) == 1);
         }
@@ -50,7 +50,7 @@ namespace j1939.Test.Unit
             var j1939Message = new J1939Message(pdu,
                 new System.Collections.Generic.List<byte> { 0x01, 0x55, 0x12, 0xAA, 0x02, 0x55, 0x0A, 0xEE });
             var parsedMessage = J1939ToStringConverter?.ConvertJ1939MessageToHumanReadableFormat(j1939Message);
-            var expectedMessage = "Continuous Torque & Speed Limit Request\nMinimum Continuous Engine Speed Limit Request: 32\nMaximum Continuous Engine Speed Limit Request: 2720\nMinimum Continuous Engine Torque Limit Request: -107\nMaximum Continuous Engine Torque Limit Request: 45\nMinimum Continuous Retarder Speed Limit Request: 64\nMaximum Continuous Retarder Speed Limit Request: 2720\nMinimum Continuous Retarder Torque Limit Request: -115\nMaximum Continuous Retarder Torque Limit Request: 113";
+            var expectedMessage = "Continuous Torque & Speed Limit Request Minimum Continuous Engine Speed Limit Request: 32 Maximum Continuous Engine Speed Limit Request: 2720 Minimum Continuous Engine Torque Limit Request: -107 Maximum Continuous Engine Torque Limit Request: 45 Minimum Continuous Retarder Speed Limit Request: 64 Maximum Continuous Retarder Speed Limit Request: 2720 Minimum Continuous Retarder Torque Limit Request: -115 Maximum Continuous Retarder Torque Limit Request: 113";
 
             Assert.IsTrue(parsedMessage?.StartsWith(expectedMessage));
         }

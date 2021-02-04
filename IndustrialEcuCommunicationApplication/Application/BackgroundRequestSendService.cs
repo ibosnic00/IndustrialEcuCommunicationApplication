@@ -42,6 +42,12 @@ namespace IECA.Application
                 // this can be removed for other can devices
                 Thread.Sleep(50);
             }
+
+            _timers!.Add(new Timer(x =>
+            {
+                _app.CheckIfAnyMultiframeMessageIsReceivedCompletely();
+            }, null, dueTime: 0, period: 100));
+
             return Task.CompletedTask;
         }
 

@@ -6,7 +6,11 @@ namespace IECA.J1939.Messages
 {
     public class MultiFrameMessage : J1939Message
     {
-        public MultiFrameMessage(uint pgn, byte sourceAddress) : base(GeneratePduFromPgnAndSourceAddress(pgn, sourceAddress), new List<byte>()) { }
+        public MultiFrameMessage(uint pgn, byte sourceAddress, uint numberOfBytesToRcv)
+            : base(GeneratePduFromPgnAndSourceAddress(pgn, sourceAddress), new List<byte>())
+        {
+            NumberOfBytesToReceiveLeft = numberOfBytesToRcv;
+        }
 
         public bool IsMessageComplete { get; set; }
         public uint NumberOfBytesToReceiveLeft { get; set; }
@@ -16,7 +20,7 @@ namespace IECA.J1939.Messages
             var dataToAdd = packetizedData;
 
             if (NumberOfBytesToReceiveLeft < 7)
-                dataToAdd.RemoveAll(byteToRemove => byteToRemove == 0xFF);
+                dataToAdd = RemoveExcessDataFromList(dataToAdd, (byte)NumberOfBytesToReceiveLeft);
 
             Data.AddRange(dataToAdd);
             NumberOfBytesToReceiveLeft -= (uint)dataToAdd.Count;
@@ -25,10 +29,18 @@ namespace IECA.J1939.Messages
                 IsMessageComplete = true;
         }
 
+        private List<byte> RemoveExcessDataFromList(List<byte> dataList, byte expectedNumberOfBytes)
+        {
+            var result = new List<byte>();
+            for (byte i = 0; i < expectedNumberOfBytes; i++)
+                result.Add(dataList[i]);
+
+            return result;
+        }
+
         private static ProtocolDataUnit GeneratePduFromPgnAndSourceAddress(uint pgn, byte sourceAddress)
         {
             return new ProtocolDataUnit(pgn, sourceAddress);
         }
-
     }
 }
