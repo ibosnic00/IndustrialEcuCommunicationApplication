@@ -33,6 +33,7 @@ namespace IECA.J1939.Configuration
         public const byte TP_CM_DATA_SIZE = 8;
         public const byte TP_DT_DATA_SIZE = 8;
         public const byte ADDR_CLAIMED_DATA_SIZE = 8;
+        public const byte ACK_DATA_SIZE = 8;
         public const byte NULL_ADDRESS = 254;
         public const int GLOBAL_DESTINATION_ADDRESS = 255;
     }
