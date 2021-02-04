@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using IECA.CANBus;
 
@@ -79,6 +80,70 @@ namespace IECA.J1939.Utility
                                   dlc: (byte)j1939Message.Data.Count,
                                   data: j1939Message.Data.ToArray(),
                                   CanMessageType.Data);
+        }
+
+        public static string ConvertByteListToStringOfBits(List<byte> byteList)
+        {
+            string result = string.Empty;
+            foreach (var singleByte in byteList)
+            {
+                result += Convert.ToString(singleByte, 2).PadLeft(8, '0');
+            }
+            return result;
+        }
+
+        public static uint? GetNumberValueFromBitArray(string stringBitArray, uint startIndex, uint len, bool reverseEndian = true)
+        {
+            if (stringBitArray.Length < startIndex + len)
+                return null;
+            if (len > 8 && reverseEndian)
+            {
+                var reversedEndianStringitArray = string.Empty;
+                uint numberOfBytes = len / 8;
+                uint leftover = len % 8;
+
+                if (leftover != 0)
+                    reversedEndianStringitArray = stringBitArray.Substring((int)(startIndex + numberOfBytes * 8), (int)leftover);
+                for (int i = 1; i <= numberOfBytes; i++)
+                    reversedEndianStringitArray += stringBitArray.Substring((int)(startIndex + len - i * 8 + leftover), (int)8);
+
+                return Convert.ToUInt32(reversedEndianStringitArray, 2);
+            }
+            if (len > 8 && !reverseEndian)
+            {
+                var reversedEndianStringitArray = string.Empty;
+                uint numberOfBytes = len / 8;
+                uint leftover = len % 8;
+
+                for (int i = 0; i < numberOfBytes; i++)
+                    reversedEndianStringitArray += stringBitArray.Substring((int)(startIndex + i * 8), (int)8);
+                if (leftover != 0)
+                    reversedEndianStringitArray += stringBitArray.Substring((int)(startIndex + numberOfBytes * 8), (int)leftover);
+
+                return Convert.ToUInt32(reversedEndianStringitArray, 2);
+            }
+            else
+                return Convert.ToUInt32(stringBitArray.Substring((int)startIndex, (int)len), 2);
+        }
+
+        public static string GetRawValueFromBitArray(string stringBitArray, uint startIndex, uint len)
+        {
+            if (stringBitArray.Length < startIndex + len)
+                return "Inv.cfg";
+
+            return stringBitArray.Substring((int)startIndex, (int)len);
+        }
+    }
+
+    public static class ListExtensions
+    {
+        public static List<List<T>> ChunkBy<T>(this List<T> source, int chunkSize)
+        {
+            return source
+                .Select((x, i) => new { Index = i, Value = x })
+                .GroupBy(x => x.Index / chunkSize)
+                .Select(x => x.Select(v => v.Value).ToList())
+                .ToList();
         }
     }
 }

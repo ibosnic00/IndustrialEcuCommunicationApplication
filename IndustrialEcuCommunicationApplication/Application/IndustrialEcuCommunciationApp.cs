@@ -13,18 +13,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using IECA.Logging;
+using IECA.J1939.Messages.Diagnostic;
 
 namespace IECA.Application
 {
     public class IndustrialEcuCommunciationApp
     {
-        #region Events
-
-        public event EventHandler<MultiFrameMessage>? MultiFrameMessageReceived;
-
-        #endregion
-
-
         #region Fields
 
         public ICanInterface CanInterface;
@@ -49,7 +43,6 @@ namespace IECA.Application
             var appConfig = ApplicationConfigurationDeserializer.GetConfigurationFromFile(appConfigurationPath);
             _appConfig = appConfig;
             CanInterface = canInterface;
-            MultiFrameMessageReceived += OnMultiFrameMessageReceived;
             _logger = logger;
         }
 
@@ -75,13 +68,12 @@ namespace IECA.Application
 
             CanInterface.Initialize();
             CanInterface.DataFrameReceived += OnCanMessageReceived;
-            MultiFrameMessageReceived += OnMultiFrameMessageReceived;
 
             TryToClaimAddress();
             StartSendingRequestPgns();
         }
 
-        public void InvokeEventIfAnyMultiframeMessageIsReceivedCompletely()
+        public void CheckIfAnyMultiframeMessageIsReceivedCompletely()
         {
             if (_mfMessagesBuffer == null)
                 return;
@@ -89,7 +81,9 @@ namespace IECA.Application
             if (_mfMessagesBuffer.Count != 0 && _mfMessagesBuffer.Any(msg => msg.IsMessageComplete == true))
             {
                 var receivedMFMessage = _mfMessagesBuffer.SingleOrDefault(msg => msg.IsMessageComplete == true);
-                MultiFrameMessageReceived?.Invoke(this, receivedMFMessage);
+
+                HandleReceivedCompletedJ1939Message(receivedMFMessage);
+                RemoveCompletedMultiFrameMessageFromBuffer(receivedMFMessage);
             }
         }
 
@@ -98,27 +92,12 @@ namespace IECA.Application
 
         #region Event Handlers
 
-        private void OnMultiFrameMessageReceived(object? sender, MultiFrameMessage msg)
-        {
-            if (msg.Data == null)
-                return;
-
-            var receivedPdu = msg.PDU;
-
-            _logger.LogDebug("Received J1939 message with PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
-
-            var receivedMessage = new J1939Message(receivedPdu, msg.Data.ToList());
-            HandleReceivedCompletedJ1939Message(receivedMessage);
-            RemoveCompletedMultiFrameMessageFromBuffer(msg);
-        }
-
         private void OnCanMessageReceived(object? sender, CanMessage msg)
         {
             if (!msg.IsExtendedId || msg.Data == null)
                 return;
 
             var receivedPdu = ProtocolDataUnit.FromCanExtIdentifierFormat(msg.ID);
-            _logger.LogDebug("Received J1939 message with PGN: 0x" + receivedPdu.ParameterGroupNumber.ToString("X2"));
 
             if (receivedPdu.ParameterGroupNumber == StandardPgns.TP_CM_PGN)
             {
@@ -165,6 +144,12 @@ namespace IECA.Application
 
                 var addressClaimedMessage = new AddressClaimedMessage(receivedPdu, msg.Data.ToList());
                 HandleReceivedAddressClaimedMessage(addressClaimedMessage);
+            }
+            else if (receivedPdu.ParameterGroupNumber == StandardPgns.DM1_PGN || receivedPdu.ParameterGroupNumber == StandardPgns.DM2_PGN)
+            {
+                // Single-frame diagnostic messages
+                var activeDiagnosticTroubleCodeMessage = new ActiveDiagnosticTroubleCodesMessage(receivedPdu, msg.Data.ToList());
+                HandleReceivedActiveDiagnosticTroubleCodesMessage(activeDiagnosticTroubleCodeMessage);
             }
             else
             {
@@ -259,15 +244,13 @@ namespace IECA.Application
         private void HandleReceivedBroadcastAnnounceMessage(BrodcastAnnounceMessage rcvMsg)
         {
             // remove any message that in buffer with same source - only one PGN per transfer is allowed
-            _mfMessagesBuffer?.RemoveAll(msg => msg.PDU.SourceAddress == rcvMsg.PDU.SourceAddress);
-            // add new mf message in buffer
-            _mfMessagesBuffer?.Add(new MultiFrameMessage(rcvMsg.Pgn, rcvMsg.PDU.SourceAddress));
+            _ = _mfMessagesBuffer?.RemoveAll(msg => msg.PDU.SourceAddress == rcvMsg.PDU.SourceAddress);
+
+            _mfMessagesBuffer?.Add(new MultiFrameMessage(rcvMsg.Pgn, rcvMsg.PDU.SourceAddress, rcvMsg.TotalMessageSize));
         }
 
         private void HandleReceivedDataTransferMessage(DataTransferMessage rcvMsg)
         {
-            //TODO: Erase after testing
-            Console.WriteLine("Received data transfer message for pgn " + rcvMsg.PDU.ParameterGroupNumber + " sqNo: " + rcvMsg.SequenceNumber);
             _mfMessagesBuffer.Single(msg => msg.PDU.SourceAddress == rcvMsg.PDU.SourceAddress).AddPacketizedData(rcvMsg.PacketizedData);
         }
 
@@ -276,14 +259,26 @@ namespace IECA.Application
             if (_mfMessagesBuffer == null)
                 return;
 
-            //TODO: Check will this erase correct msg
             _mfMessagesBuffer.RemoveAll(mfMsg => mfMsg.PDU.SourceAddress == rcvMsg.PDU.SourceAddress
                                                                 && mfMsg.PDU.Specific.Value == rcvMsg.PDU.Specific.Value);
         }
 
+        private void HandleReceivedActiveDiagnosticTroubleCodesMessage(ActiveDiagnosticTroubleCodesMessage activeDiagnosticTroubleCodeMessage)
+        {
+            //TODO: pretify dtc logger
+            foreach (var dtcRecord in activeDiagnosticTroubleCodeMessage.DtcRecords)
+                _logger.LogInfo($"DM1 - stat: {dtcRecord.LampStatus}, spn: {dtcRecord.DTC.SuspectParameterNumber}, fmi: {dtcRecord.DTC.FailureModeIdentifier}, oc: {dtcRecord.DTC.OccurenceCount}");
+        }
+
         private void HandleReceivedCompletedJ1939Message(J1939Message rcvMsg)
         {
-            if (_j1939ToStringConverter != null)
+            if (rcvMsg.PDU.ParameterGroupNumber == StandardPgns.DM1_PGN || rcvMsg.PDU.ParameterGroupNumber == StandardPgns.DM2_PGN)
+            {
+                // Multiple-frame diagnostic messages
+                var activeDiagnosticTroubleCodeMessage = new ActiveDiagnosticTroubleCodesMessage(rcvMsg.PDU, rcvMsg.Data);
+                HandleReceivedActiveDiagnosticTroubleCodesMessage(activeDiagnosticTroubleCodeMessage);
+            }
+            else if (_j1939ToStringConverter != null)
                 _logger.LogInfo(_j1939ToStringConverter.ConvertJ1939MessageToHumanReadableFormat(rcvMsg));
         }
 
