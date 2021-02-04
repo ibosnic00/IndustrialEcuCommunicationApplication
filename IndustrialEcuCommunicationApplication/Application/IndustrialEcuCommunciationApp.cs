@@ -135,7 +135,11 @@ namespace IECA.Application
             }
             else if (receivedPdu.ParameterGroupNumber == StandardPgns.ACK_PGN)
             {
-                // currently not in use
+                if (msg.DLC < StandardData.ACK_DATA_SIZE)
+                    return;
+
+                var acknowledgementMessage = new AcknowledgementMessage(receivedPdu, msg.Data.ToList());
+                HandleReceivedAcknowledgementMessage(acknowledgementMessage);
             }
             else if (receivedPdu.ParameterGroupNumber == StandardPgns.ADDR_CLAIMED_PGN)
             {
@@ -261,6 +265,11 @@ namespace IECA.Application
 
             _mfMessagesBuffer.RemoveAll(mfMsg => mfMsg.PDU.SourceAddress == rcvMsg.PDU.SourceAddress
                                                                 && mfMsg.PDU.Specific.Value == rcvMsg.PDU.Specific.Value);
+        }
+
+        private void HandleReceivedAcknowledgementMessage(AcknowledgementMessage acknowledgementMessage)
+        {
+            _logger.LogInfo($"Received ACK Message for PGN: {acknowledgementMessage.PgnAcknowledged} - {acknowledgementMessage.Response.ToString()}");
         }
 
         private void HandleReceivedActiveDiagnosticTroubleCodesMessage(ActiveDiagnosticTroubleCodesMessage activeDiagnosticTroubleCodeMessage)
