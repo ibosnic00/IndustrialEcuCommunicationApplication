@@ -18,7 +18,7 @@ namespace IECA
 
             while (true)
             {
-                _ = Task.Run(() => { mainApp.InvokeEventIfAnyMultiframeMessageIsReceivedCompletely(); });
+                // running until user explicitly stops process
             };
         }
     }

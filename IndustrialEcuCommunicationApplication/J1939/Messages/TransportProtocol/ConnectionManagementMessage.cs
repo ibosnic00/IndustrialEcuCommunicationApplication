@@ -29,7 +29,7 @@ namespace IECA.J1939.Messages.TransportProtocol
             if (data.Count != 8)
                 throw new Exception("Invalid Brodcast Announce Message");
 
-            TotalMessageSize = (UInt16)(data[1] << 8 | data[2]);
+            TotalMessageSize = (UInt16)(data[2] << 8 | data[1]);
             TotalNumberOfPackets = data[3];
             Pgn = Helpers.GetPgnFromList(data.GetRange(5, 3)) ?? throw new Exception("Invalid PGN in BAM Data");
         }
