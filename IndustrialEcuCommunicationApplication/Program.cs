@@ -25,12 +25,12 @@ namespace IECA
                 .WithParsed(parsedOptions => cmdLineOptions = parsedOptions);
 
             var mainApp = new IndustrialEcuCommunciationApp(canInterface: new SocketCanInterface(cmdLineOptions.SelectedCanChannel),
-                                                            appConfigurationPath: cmdLineOptions.CfgFilePath,
-                                                            logger: new SerilogLogger());
+                                                            appConfigurationPath: cmdLineOptions.CfgFilePath);
             mainApp.Initialize();
 
             while (true)
             {
+                System.Threading.Thread.Sleep(10);
                 // running until user explicitly stops process
             };
         }

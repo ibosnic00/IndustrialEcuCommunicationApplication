@@ -14,21 +14,32 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using IECA.Logging;
 using IECA.J1939.Messages.Diagnostic;
+using IECA.MQTT;
 
 namespace IECA.Application
 {
     public class IndustrialEcuCommunciationApp
     {
+        #region Constants
+
+        // 15 minutes is default
+        const int DEFAULT_SAMPLING_TIME_IN_MS = 900_000;
+
+        #endregion
+
+
         #region Fields
 
         public ICanInterface CanInterface;
         public bool AddressClaimSuccessfull;
         public byte ClaimedAddress = StandardData.NULL_ADDRESS;
+        public MQTTClient MqttClient;
 
         List<MultiFrameMessage>? _mfMessagesBuffer;
-        J1939ToStringConverter? _j1939ToStringConverter;
         Dictionary<byte, EcuName>? _knownNetworkNodes;
         EcuName? _ecuName;
+        IHost? _backgroundWorker;
+        int _samplingTimeMs = DEFAULT_SAMPLING_TIME_IN_MS;
 
         readonly ApplicationConfiguration _appConfig;
         readonly ILogger _logger;
@@ -38,12 +49,21 @@ namespace IECA.Application
 
         #region Constructors
 
-        public IndustrialEcuCommunciationApp(ICanInterface canInterface, string appConfigurationPath, ILogger logger)
+        public IndustrialEcuCommunciationApp(ICanInterface canInterface, string appConfigurationPath)
         {
             var appConfig = ApplicationConfigurationDeserializer.GetConfigurationFromFile(appConfigurationPath);
             _appConfig = appConfig;
             CanInterface = canInterface;
-            _logger = logger;
+            MqttClient = new MQTTClient(_appConfig.MqttClient.BrokerAddress,
+                                         _appConfig.MqttClient.BrokerPort,
+                                         _appConfig.MqttClient.ClientId,
+                                         _appConfig.MqttClient.Username,
+                                         _appConfig.MqttClient.Password,
+                                         _appConfig.MqttClient.SamplingTimeTopic,
+                                         _appConfig.MqttClient.EngineDataPayloadTopic,
+                                         _appConfig.MqttClient.ConnectionRetryTimeMilliseconds);
+
+            _logger = new MqttLogger(MqttClient);
         }
 
         #endregion Constructors
@@ -53,24 +73,33 @@ namespace IECA.Application
 
         public void Initialize()
         {
-            _logger.Initialize();
-
-            var dataConfig = DataConfigurationDeserializer.GetConfigurationFromFile(_appConfig.DataConfigurationPath);
-            _j1939ToStringConverter = new J1939ToStringConverter(dataConfig);
+            _logger.Initialize(_appConfig.EngineModel, _appConfig.EngineType, _appConfig.EngineDescription);
+            MqttClient.ConnectToClientIfItIsNotConnected();
+            MqttClient.SamplingTimeReceived += MqttClient_SamplingTimeReceived;
 
             _mfMessagesBuffer = new List<MultiFrameMessage>();
             _knownNetworkNodes = new Dictionary<byte, EcuName>();
             AddressClaimSuccessfull = false;
-            _ecuName = new EcuName(_appConfig.ArbitraryAddressCapable, _appConfig.IndustryGroup,
-                _appConfig.VehicleSystemInstance, _appConfig.VehicalSystem, reserved: false,
-                _appConfig.Function, _appConfig.FunctionInstance, _appConfig.EcuInstance,
-                _appConfig.ManufacturerCode, _appConfig.IdentityNumber);
+            _ecuName = new EcuName(_appConfig.EcuName.ArbitraryAddressCapable, _appConfig.EcuName.IndustryGroup,
+                _appConfig.EcuName.VehicleSystemInstance, _appConfig.EcuName.VehicalSystem, reserved: false,
+                _appConfig.EcuName.Function, _appConfig.EcuName.FunctionInstance, _appConfig.EcuName.EcuInstance,
+                _appConfig.EcuName.ManufacturerCode, _appConfig.EcuName.IdentityNumber);
 
             CanInterface.Initialize();
             CanInterface.DataFrameReceived += OnCanMessageReceived;
 
             TryToClaimAddress();
-            StartSendingRequestPgns();
+            StartSendingRequestPgns(_samplingTimeMs);
+        }
+
+        public void StartJsonPayloadCreationForRequestId(long requestId)
+        {
+            _logger.StartLogCreationForRequestId(requestId);
+        }
+
+        public void LogInfoWithLogger(string info)
+        {
+            _logger.LogInfo(info);
         }
 
         public void CheckIfAnyMultiframeMessageIsReceivedCompletely()
@@ -80,10 +109,24 @@ namespace IECA.Application
 
             if (_mfMessagesBuffer.Count != 0 && _mfMessagesBuffer.Any(msg => msg.IsMessageComplete == true))
             {
-                var receivedMFMessage = _mfMessagesBuffer.SingleOrDefault(msg => msg.IsMessageComplete == true);
+                try
+                {
+                    var receivedMFMessage = _mfMessagesBuffer.SingleOrDefault(msg => msg.IsMessageComplete == true);
 
-                HandleReceivedCompletedJ1939Message(receivedMFMessage);
-                RemoveCompletedMultiFrameMessageFromBuffer(receivedMFMessage);
+                    if (receivedMFMessage is not MultiFrameMessage)
+                        return;
+
+                    HandleReceivedCompletedJ1939Message(receivedMFMessage);
+                    RemoveCompletedMultiFrameMessageFromBuffer(receivedMFMessage);
+                }
+                catch
+                {
+                    foreach (var mfMsg in _mfMessagesBuffer.Where(msg => msg.IsMessageComplete == true).ToList())
+                    {
+                        HandleReceivedCompletedJ1939Message(mfMsg);
+                        RemoveCompletedMultiFrameMessageFromBuffer(mfMsg);
+                    }
+                }
             }
         }
 
@@ -91,6 +134,13 @@ namespace IECA.Application
 
 
         #region Event Handlers
+
+        private void MqttClient_SamplingTimeReceived(object? sender, int samplingTimeMs)
+        {
+            _samplingTimeMs = samplingTimeMs;
+            StopSendingRequestPgns();
+            Task.Run(() => { StartSendingRequestPgns(_samplingTimeMs); });
+        }
 
         private void OnCanMessageReceived(object? sender, CanMessage msg)
         {
@@ -167,16 +217,22 @@ namespace IECA.Application
 
         #region Private Methods
 
-        private IHostBuilder BackgroundRequestSender() =>
+        private IHostBuilder BackgroundRequestSender(int samplingTimeMs) =>
                Host.CreateDefaultBuilder().ConfigureServices(services =>
                {
                    services.AddHostedService(x =>
-                   new BackgroundRequestSendService(_appConfig!.PgnsForRequesting, this));
+                   new BackgroundRequestSendService(samplingTimeMs, this));
                });
 
-        private void StartSendingRequestPgns()
+        private void StartSendingRequestPgns(int samplingTimeMs)
         {
-            BackgroundRequestSender().Build().Run();
+            _backgroundWorker = BackgroundRequestSender(samplingTimeMs).Build();
+            _backgroundWorker.Run();
+        }
+
+        private void StopSendingRequestPgns()
+        {
+            _backgroundWorker?.Dispose();
         }
 
         private void TryToClaimAddress()
@@ -255,7 +311,7 @@ namespace IECA.Application
 
         private void HandleReceivedDataTransferMessage(DataTransferMessage rcvMsg)
         {
-            _mfMessagesBuffer.Single(msg => msg.PDU.SourceAddress == rcvMsg.PDU.SourceAddress).AddPacketizedData(rcvMsg.PacketizedData);
+            _mfMessagesBuffer!.Single(msg => msg.PDU.SourceAddress == rcvMsg.PDU.SourceAddress).AddPacketizedData(rcvMsg.PacketizedData);
         }
 
         private void RemoveCompletedMultiFrameMessageFromBuffer(MultiFrameMessage rcvMsg)
@@ -287,8 +343,8 @@ namespace IECA.Application
                 var activeDiagnosticTroubleCodeMessage = new ActiveDiagnosticTroubleCodesMessage(rcvMsg.PDU, rcvMsg.Data);
                 HandleReceivedActiveDiagnosticTroubleCodesMessage(activeDiagnosticTroubleCodeMessage);
             }
-            else if (_j1939ToStringConverter != null)
-                _logger.LogInfo(_j1939ToStringConverter.ConvertJ1939MessageToHumanReadableFormat(rcvMsg));
+            else
+                _logger.AddJ1939MessageToLogHandler(rcvMsg);
         }
 
         #endregion
