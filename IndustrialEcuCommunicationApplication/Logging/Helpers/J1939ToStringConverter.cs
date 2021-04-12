@@ -27,7 +27,7 @@ namespace IECA
                 return $"Undefined PGN {j1939Message.PDU.ParameterGroupNumber}. Check Your configuration.";
             try
             {
-                result += pgnFromConfig.FullName;
+                result += "[" + j1939Message.PDU.SourceAddress + "] " + pgnFromConfig.FullName;
                 var dataConvertedToBits = Helpers.ConvertByteListToStringOfBits(j1939Message.Data);
                 foreach (var spnFromConfig in pgnFromConfig.Spns)
                 {

@@ -2,97 +2,29 @@
   "WantedAddress": 128,
   "MinAddress": 128,
   "MaxAddress": 240,
-  "DataConfigurationPath": "/home/pi/Desktop/ieca_configuration.json",
   "AddressClaimWaitPeriodMs": 1250,
-  "ArbitraryAddressCapable": true,
-  "IndustryGroup": 0,
-  "VehicleSystemInstance": 0,
-  "VehicalSystem": 127,
-  "Function": 255,
-  "FunctionInstance": 0,
-  "EcuInstance": 0,
-  "ManufacturerCode": 2020,
-  "IdentityNumber": 55214,
-  "PgnsForRequesting": [
-    {
-      "ParameterGroupNumber": 65227,
-      "RequestRateMilliseconds": 10000
-    },
-    {
-      "ParameterGroupNumber": 61443,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 61444,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 64976,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 64988,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65031,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65101,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65130,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65170,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65177,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65244,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65253,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65257,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65262,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65263,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65266,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65270,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65271,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65272,
-      "RequestRateMilliseconds": 1000
-    },
-    {
-      "ParameterGroupNumber": 65276,
-      "RequestRateMilliseconds": 1000
-    }
-  ]
+  "EcuName": {
+    "ArbitraryAddressCapable": true,
+    "IndustryGroup": 0,
+    "VehicleSystemInstance": 0,
+    "VehicalSystem": 127,
+    "Function": 255,
+    "FunctionInstance": 0,
+    "EcuInstance": 0,
+    "ManufacturerCode": 2020,
+    "IdentityNumber": 55214
+  },
+  "MqttClient": {
+    "BrokerAddress": "172.104.151.160",
+    "BrokerPort": 1883,
+    "ClientId": "603bcfe769ae7b09a13cfb8c",
+    "Username": "scriptTesting",
+    "Password": "ErHCPyk#^Up;$P$z",
+    "SamplingTimeTopic": "home/garden/fountain",
+    "EngineDataPayloadTopic": "home/garden/fountain",
+    "ConnectionRetryTimeMilliseconds": 1000
+  },
+  "EngineModel": "Caterpilar||c32",
+  "EngineType": "MAIN",
+  "EngineDescription": "Engine 1"
 }

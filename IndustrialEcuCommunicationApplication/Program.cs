@@ -1,7 +1,6 @@
 ﻿using CommandLine;
 using IECA.Application;
 using IECA.CANBus;
-using IECA.Logging;
 using System.Collections.Generic;
 
 namespace IECA
@@ -25,12 +24,12 @@ namespace IECA
                 .WithParsed(parsedOptions => cmdLineOptions = parsedOptions);
 
             var mainApp = new IndustrialEcuCommunciationApp(canInterface: new SocketCanInterface(cmdLineOptions.SelectedCanChannel),
-                                                            appConfigurationPath: cmdLineOptions.CfgFilePath,
-                                                            logger: new SerilogLogger());
+                                                            appConfigurationPath: cmdLineOptions.CfgFilePath);
             mainApp.Initialize();
 
             while (true)
             {
+                System.Threading.Thread.Sleep(10);
                 // running until user explicitly stops process
             };
         }
@@ -39,6 +38,7 @@ namespace IECA
         static void HandleParseError(IEnumerable<Error> errs)
         {
             System.Console.WriteLine("Unable to start application. Check command line arguments");
+            System.Environment.Exit(-1);
         }
     }
 
