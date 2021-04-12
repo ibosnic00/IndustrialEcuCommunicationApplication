@@ -131,7 +131,7 @@ namespace IECA
                 "0011" => "\"Synchronized Starboard\"",
                 "0100" => "\"Synchronized Master\"",
                 "1111" => "\"Take no action\"",
-                _ => "Reserved",
+                _ => "\"Reserved\"",
             };
         }
 
@@ -142,7 +142,7 @@ namespace IECA
                 "00" => "\"Trolling mode OFF\"",
                 "01" => "\"Trolling mode ACTIVE\"",
                 "11" => "\"Take no action\"",
-                _ => "Reserved",
+                _ => "\"Reserved\"",
             };
         }
 

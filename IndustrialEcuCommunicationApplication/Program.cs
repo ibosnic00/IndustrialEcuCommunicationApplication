@@ -1,7 +1,6 @@
 ﻿using CommandLine;
 using IECA.Application;
 using IECA.CANBus;
-using IECA.Logging;
 using System.Collections.Generic;
 
 namespace IECA
@@ -39,6 +38,7 @@ namespace IECA
         static void HandleParseError(IEnumerable<Error> errs)
         {
             System.Console.WriteLine("Unable to start application. Check command line arguments");
+            System.Environment.Exit(-1);
         }
     }
 

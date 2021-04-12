@@ -34,11 +34,21 @@ namespace IECA.MQTT
 
         public MqttConnectionResult ConnectToClientIfItIsNotConnected()
         {
-            MqttConnectionResult result;
+            MqttConnectionResult result = MqttConnectionResult.ServerUnavailable;
             if (_client.IsConnected)
                 result = MqttConnectionResult.ConnectionAccepted;
             else
-                result = (MqttConnectionResult)_client.Connect(ClientId, _username, _password);
+            {
+                try
+                {
+                    result = (MqttConnectionResult)_client.Connect(ClientId, _username, _password);
+                }
+                catch
+                {
+                    // TODO: add logging
+                }
+            }
+
 
             if (result == MqttConnectionResult.ConnectionAccepted)
                 SubscribeToTopic(_samplingTimeTopic);

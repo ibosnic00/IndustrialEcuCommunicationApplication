@@ -24,6 +24,7 @@ namespace IECA.Application
 
         // 15 minutes is default
         const int DEFAULT_SAMPLING_TIME_IN_MS = 900_000;
+        const int MIN_SAMPLING_TIME_MS = 1500;
 
         #endregion
 
@@ -40,7 +41,6 @@ namespace IECA.Application
         EcuName? _ecuName;
         IHost? _backgroundWorker;
         int _samplingTimeMs = DEFAULT_SAMPLING_TIME_IN_MS;
-
         readonly ApplicationConfiguration _appConfig;
         readonly ILogger _logger;
 
@@ -137,9 +137,12 @@ namespace IECA.Application
 
         private void MqttClient_SamplingTimeReceived(object? sender, int samplingTimeMs)
         {
-            _samplingTimeMs = samplingTimeMs;
-            StopSendingRequestPgns();
-            Task.Run(() => { StartSendingRequestPgns(_samplingTimeMs); });
+            if (samplingTimeMs > MIN_SAMPLING_TIME_MS)
+            {
+                _samplingTimeMs = samplingTimeMs;
+                StopSendingRequestPgns();
+                Task.Run(() => { StartSendingRequestPgns(_samplingTimeMs); });
+            }
         }
 
         private void OnCanMessageReceived(object? sender, CanMessage msg)
