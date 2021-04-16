@@ -12,7 +12,7 @@ namespace IECA.J1939.Messages
         private const int ADDR_CLAIM_FORMAT = 238;
 
         public CannotClaimAddressMessage(CanMessage canMessage)
-            : base(ProtocolDataUnit.FromCanExtIdentifierFormat(canMessage.ID), canMessage.Data.ToList())
+            : base(ProtocolDataUnit.FromCanExtIdentifierFormat(canMessage.ID), canMessage.Data!.ToList())
         {
             EcuName = EcuName.FromRawFormat(Helpers.GetRawEcuName(canMessage.Data.ToList()) ?? 0);
         }

@@ -91,15 +91,20 @@ namespace IECA.CANBus
             if (canDumpMessageToSend == null)
                 return;
 
-            canSendProcess = new Process();
-            canSendProcess.StartInfo.FileName = CANSEND_FILE_NAME;
-            canSendProcess.StartInfo.UseShellExecute = false;
-            canSendProcess.StartInfo.Arguments = selectedChannel.ToString() + " " + canDumpMessageToSend;
-            canSendProcess.StartInfo.RedirectStandardOutput = true;
-            canSendProcess.StartInfo.CreateNoWindow = true;
+            try
+            {
+                canSendProcess = new Process();
+                canSendProcess.StartInfo.FileName = CANSEND_FILE_NAME;
+                canSendProcess.StartInfo.UseShellExecute = false;
+                canSendProcess.StartInfo.Arguments = selectedChannel.ToString() + " " + canDumpMessageToSend;
+                canSendProcess.StartInfo.RedirectStandardOutput = true;
+                canSendProcess.StartInfo.CreateNoWindow = true;
 
-            _ = canSendProcess.Start();
-            MessageSent?.Invoke(this, canMessage);
+                _ = canSendProcess.Start();
+                MessageSent?.Invoke(this, canMessage);
+            }
+            catch { }
+
         }
 
         #endregion
